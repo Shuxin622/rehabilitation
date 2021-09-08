@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html>
+  <head> 
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Sampling</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="all,follow">
+
+      {% load static %}
+    <!-- Bootstrap CSS-->
+    <link rel="stylesheet" href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}">
+    <!-- Font Awesome CSS-->
+    <link rel="stylesheet" href="{% static 'vendor/font-awesome/css/font-awesome.min.css' %}">
+    <!-- Custom Font Icons CSS-->
+    <link rel="stylesheet" href="{% static 'css/font.css' %}">
+    <!-- Google fonts - Muli-->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Muli:300,400,700">
+    <!-- theme stylesheet-->
+    <link rel="stylesheet" href="{% static 'css/style.default.css' %}" id="theme-stylesheet">
+    <!-- Custom stylesheet - for your changes-->
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+    <!-- Favicon-->
+    <link rel="shortcut icon" href="{% static 'images/favicon.ico' %}">
+
+  </head>
+  <body>
+
+    <script>
+    var fps = 20;
+    var time_interval = 1000 / fps;
+    var quality = 0.8;
+    </script>
+
+    <header class="header">
+      <nav class="navbar navbar-expand-lg">
+        <div class="container-fluid d-flex align-items-center justify-content-between">
+          <div class="navbar-header">
+            <!-- Navbar Header--><a href="{% url 'video2' num 1 %}" class="navbar-brand">
+              <div class="brand-text brand-big visible text-uppercase"><strong class="text-primary">Mechanism</strong><strong>Design</strong></div>
+              <div class="brand-text brand-sm"><strong class="text-primary">M</strong><strong>D</strong></div></a>
+            <!-- Sidebar Toggle Btn-->
+            <button class="sidebar-toggle"><i class="fa fa-long-arrow-left"></i></button>
+          </div>
+        </div>
+      </nav>
+    </header>
+    <div class="d-flex align-items-stretch">
+      <!-- Sidebar Navigation-->
+      <nav id="sidebar">
+        <!-- Sidebar Header-->
+        <div class="sidebar-header d-flex align-items-center">
+          <div class="title">
+            <h1 class="h5">Shu Xin</h1>
+            <p>Web Designer</p>
+          </div>
+        </div>
+        <!-- Sidebar Navidation Menus-->
+          <span class="heading">Main</span>
+        <ul class="list-unstyled h5">
+          <li><a href="{% url 'video2' num 1 %}"> <i class="icon-home"></i><br>Sampling</a></li>
+          <li><a href="{% url 'joint1' num %}"> <i class="icon-grid"></i><br>Constraints </a></li>
+          <li><a href="{% url 'PositionSyn' %}"> <i class="fa fa-bar-chart"></i>Mechanism&nbsp;Evaluation </a></li>
+          <li><a href="{% url 'para' %}"> <i class="icon-padnote"></i>Parameters&nbsp;Visualization </a></li>
+        </ul>
+      </nav>
+      <!-- Sidebar Navigation end-->
+      <div class="page-content">
+        <div class="page-header">
+          <div class="container-fluid">
+              <div class="h3">
+              <ul class="breadcrumb">
+                  <li class="breadcrumb-item">Sampling</li>
+                  <li class="breadcrumb-item "><a href="{% url 'joint1' num %}">Constraints</a></li>
+                  <li class="breadcrumb-item "><a href="{% url 'PositionSyn' %}">Mechanism&nbsp;Evaluation</a></li>
+                  <li class="breadcrumb-item "><a href="{% url 'para' %}">Parameters&nbsp;Visualization</a></li>
+              </ul>
+              </div>
+          </div>
+        </div>
+
+        <section class="no-padding-bottom">
+          <div class="container-fluid">
+            <div class="row">
+                <div class="col-6">
+                  <div class="card">
+                      <div class="card-body">
+                        <div class="mb-3">
+                          <h5 class="card-title mb-0">Record&nbsp;Video</h5>
+                          </div>
+                            <div class="video-box">
+                                <video autoplay="autoplay" width="100%" poster="{% static 'images/camera.png' %}"></video>
+                                <div id="video-tag" class="video-tag" style="display: none">
+                                <i class="mdi mdi-24px"></i>录制中</div>
+                            </div>
+                      </div>
+                      <div class="card-footer">
+                        <button type="button" class="btn btn-success" id="startButton">&nbsp;Start&nbsp;Record&nbsp;&nbsp;</button>
+                        <button type="button" class="btn btn-secondary" id="stopButton">&nbsp;Stop&nbsp;Record&nbsp;&nbsp;</button>
+
+                      </div>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="card">
+                      <div class="card-body">
+                          <div class="mb-3">
+                              <h5 class="card-title mb-0">View</h5>
+                          </div>
+                          <div class="img-container">
+                              <canvas id="canvas" height="500px" ></canvas>
+                              <img id="myImg">
+                          </div>
+                      </div>
+                      <div class="card-footer">
+                          <form action="{% url 'videoUpload' %}" method="post" id="videoForm">
+                              {% csrf_token %}
+                          </form>
+                          <button type="button" class="btn btn-primary" id="viewButton">&nbsp;&nbsp;View&nbsp;&nbsp;</button>
+                          <button type="button" class="btn btn-primary" id="restart" style="display: none">&nbsp;&nbsp;Replay&nbsp;&nbsp;</button>
+                          <button type="button" class="btn btn-primary pull-right" id="uploadButton">&nbsp;&nbsp;Upload&nbsp;&nbsp;</button>
+                      </div>
+                  </div>
+                </div>
+            </div>
+          </div>
+        </section>
+
+        <footer class="footer">
+          <div class="footer__block block no-margin-bottom">
+
+          </div>
+        </footer>
+            <div id="preloader" class="preloader"></div>
+            <div id="afterloader" class="preloader" style="display: none;"></div>
+      </div>
+    </div>
+    <!-- JavaScript files-->
+    <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+    <script src="{% static 'vendor/popper.js/umd/popper.min.js' %}"> </script>
+    <script src="{% static 'vendor/bootstrap/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'vendor/jquery.cookie/jquery.cookie.js' %}"> </script>
+    <script src="{% static 'vendor/chart.js/Chart.min.js' %}"></script>
+    <script src="{% static 'vendor/jquery-validation/jquery.validate.min.js' %}"></script>
+    <script src="{% static 'js/charts-home.js' %}"></script>
+    <script src="{% static 'js/front.js' %}"></script>
+
+    <script>
+      const videoTag = document.getElementById('video-tag');
+      const video = document.querySelector('video');
+      const canvas = document.getElementById('canvas');
+      const context = canvas.getContext('2d');
+      const startButton = document.getElementById('startButton');
+      const stopButton = document.getElementById('stopButton');
+      const viewButton = document.getElementById('viewButton');
+      const uploadButton = document.getElementById('uploadButton');
+      let videoForm = document.getElementById('videoForm');
+      let flag = false;
+      let videoUploaded_flag = false;
+      let videoRecorded_flag = false;
+      let use_upload_flag = false;
+      let imgs = new Array();
+      let recording = null;
+      let myImg = document.getElementById('myImg');
+      let k = {{ num }};
+      const img_src = [];
+
+      function img_preload() {
+          const video = [];
+          canvas.style.display = 'none';
+          myImg.src = "{% static 'images/video.png' %}";
+          myImg.onload = function(){
+              context.drawImage(myImg,0,0);
+          }
+          for (let i = 0; i < k; i ++) {
+              video.push(new Image());
+              img_src.push("{% static 'images/video/' %}" + i + '.jpg?t=' + Math.random());
+          }
+          for (let i = 0; i < k; i ++) {
+              video[i].src = img_src[i];
+          }
+      }
+
+  $(window).on('load', function () {
+      img_preload();
+
+      if ($('#preloader').length) {
+          $('#preloader').delay(400).fadeOut('slow', function () {
+              $(this).remove();
+              {% if back == 0 and num > 0 %}
+                  alert("视频上传成功").then(function(t) {
+                      if (t.value) {
+                          window.location.href='{% url 'joint1' num %}';
+                      }
+                  });
+              {% endif %}
+          });
+      }
+  });
+
+      if (k > 0) {
+          videoUploaded_flag = true;
+          openCamera();
+          video.poster = "{% static 'images/empty.jpg' %}";
+          startButton.innerHTML = "&nbsp;&nbsp;Re-record&nbsp;&nbsp;";
+          use_upload_flag = true;
+      }
+
+      function openCamera() {
+          const constraints = {
+              video: {  width: { min: 640, ideal: 640, max: 640 },  height: { min: 480, ideal: 480, max: 480 },
+                        deviceId: 'fbe2d5cb9919d2cdc011822043d93c3549aa4caa8b9de6f8fdb4d94ff6af9a59'},
+          };
+          navigator.mediaDevices.getUserMedia(constraints).then(handleSuccess);
+          flag = true;
+
+      }
+
+//facingMode:'user'deviceId: 'fbe2d5cb9919d2cdc011822043d93c3549aa4caa8b9de6f8fdb4d94ff6af9a59'facingMode:'user'
+      function handleSuccess(stream) {
+          video.srcObject = stream;
+      }
+
+      video.onclick = function() {
+          if (!flag) {
+              openCamera();
+          }
+      };
+
+
+      startButton.onclick = function() {
+          startButton.disabled = true;
+          stopButton.disabled = false;
+          if (!flag) {
+              openCamera();
+              setTimeout(function () {
+                  k = 0;
+                  delete imgs;
+                  imgs = new Array();
+                  canvas.width = video.videoWidth;
+                  canvas.height = video.videoHeight;
+                  videoTag.style.display = "";
+                  recording = window.setInterval(function() {
+                      context.drawImage(video, 0, 0);
+                      imgs[k] = canvas.toDataURL('image/jpeg', quality);
+                      k = k + 1;
+                  }, time_interval);
+              }, 3000);
+          } else {
+              k = 0;
+              delete imgs;
+              imgs = new Array();
+              canvas.width = video.videoWidth;
+              canvas.height = video.videoHeight;
+              videoTag.style.display = "";
+              recording = window.setInterval(function() {
+                  context.drawImage(video, 0, 0);
+                  imgs[k] = canvas.toDataURL('image/jpeg', quality);
+                  k = k + 1;
+              }, time_interval);
+          }
+      };
+
+
+      stopButton.onclick = function() {
+          clearInterval(recording);
+          videoTag.style.display = "none";
+          startButton.innerHTML = "&nbsp;&nbsp;重新录制&nbsp;&nbsp;";
+          use_upload_flag = false;
+          videoRecorded_flag = true;
+          startButton.disabled = false;
+          stopButton.disabled = true;
+          alert("录制成功").then(function(t){
+                        if (t.value) {
+              videoShow();
+              videoshown();
+          }
+          })
+
+
+      };
+
+      viewButton.onclick = function() {
+          if (k === 0 && !use_upload_flag) {
+              alert("无已录制视频");
+          }else{
+              videoShow();
+              videoshown();
+          }
+      };
+
+      function videoShow(){
+          if (use_upload_flag) {
+              canvas.style.display = 'none';
+              myImg.src = img_src[0];
+          } else {
+              myImg.style.display = 'none';
+              context.clearRect(0, 0, canvas.width, canvas.height);
+              let img = new Image();
+              img.src = imgs[0];
+              img.onload = function() {
+                  context.drawImage(img, 0, 0, canvas.width, canvas.height);
+              }
+          }
+          restart_button.style.display = 'none';
+      }
+
+      function videoshown(){
+          video_play();
+      }
+
+      function videohide(){
+          clearInterval(replay);
+      }
+
+      function videohidden(){
+          canvas.style.display = '';
+          myImg.style.display = '';
+      }
+
+
+      let replay;
+      const restart_button = document.getElementById('restart');
+
+
+      function video_play() {
+          if (use_upload_flag) {
+              let i = 0;
+              replay = window.setInterval(function() {
+                  myImg.src = img_src[i];
+                  i = i + 1;
+                  if (i === k) {
+                      restart_button.style.display = '';
+                      clearInterval(replay);
+                  }
+              }, time_interval);
+          } else {
+              let img = new Image();
+              let i = 0;
+              replay = window.setInterval(function() {
+                  img.src = imgs[i];
+                  img.onload = function() {
+                      context.drawImage(img, 0, 0);
+                      i = i + 1;
+                  };
+                  if (i === k) {
+                      restart_button.style.display = '';
+                      clearInterval(replay);
+                  }
+              }, time_interval);
+          }
+      }
+
+
+      restart_button.onclick = function () {
+          restart_button.style.display = 'none';
+          video_play();
+      }
+
+
+      function upload() {
+          if (use_upload_flag || !videoRecorded_flag) {
+              alert("失败");
+          } else {
+              document.getElementById('afterloader').style.display = '';
+              document.body.appendChild(videoForm);
+              let input_num = document.createElement('input');
+              input_num.type = 'hidden';
+              input_num.id = 'num';
+              input_num.value = k;
+              input_num.name = 'num';
+              videoForm.appendChild(input_num);
+
+              for (let i = 0; i < k; i++) {
+                  let input = document.createElement('input');
+                  input.type = 'hidden';
+                  input.id = 'img' + i;
+                  input.name = 'img' + i;
+                  input.value = imgs[i];
+                  videoForm.appendChild(input);
+              }
+              videoForm.submit();
+          }
+      }
+
+      uploadButton.onclick =upload;
+
+
+
+
+    </script>
+  </body>
+</html>

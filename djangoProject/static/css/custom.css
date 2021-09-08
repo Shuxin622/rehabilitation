@@ -1,0 +1,89 @@
+/* your styles go here */
+.video-box {
+  position: relative;
+}
+.video-box video{
+  display: inline-block;
+  vertical-align: baseline;
+}
+.video-box .video-tag{
+  position: absolute;
+  top: 30px;
+  right: 0;
+  width: 150px;
+  z-index: 999;
+  color: #f85359;
+  font-size: 18px;
+}
+
+.img-container,
+.img-preview {
+  background-color: #f7f7f7;
+  text-align: center;
+  width: 100%;
+}
+
+.img-container {
+  margin-bottom: 1rem;
+  max-height: 497px;
+  min-height: 200px;
+}
+
+@media (min-width: 768px) {
+  .img-container {
+    min-height: 300px;
+  }
+}
+
+.img-container > img {
+  max-width: 100%;
+}
+
+.docs-preview {
+  margin-left: 50px;
+  min-height: 125px;
+}
+
+.img-preview {
+  margin-bottom: .5rem;
+  margin-right: .5rem;
+  overflow: hidden;
+}
+
+.img-preview > img {
+  max-width: 100%;
+}
+
+.preview-lg {
+  height: 120px;
+  width: 180px;
+}
+
+.preview-md {
+  height: 4.5rem;
+  width: 8rem;
+}
+
+.preview-sm {
+  height: 2.25rem;
+  width: 4rem;
+}
+
+.preview-xs {
+  height: 1.125rem;
+  margin-right: 0;
+  width: 2rem;
+}
+
+
+.mdi:before,
+.mdi-set{
+  display:inline-block;
+  font:normal normal normal 24px/1 "Material Design Icons";
+  font-size:inherit;
+  text-rendering:auto;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  vertical-align:middle}
+.mdi-video-account:before{content:"\F918"}
+.mdi-24px.mdi:before{font-size:24px}

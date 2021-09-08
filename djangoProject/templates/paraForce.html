@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>
+        Visualization
+    </title>
+      {% load static %}
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="all,follow">
+    <!-- Bootstrap CSS-->
+      <link rel="stylesheet" href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}">
+    <!-- Font Awesome CSS-->
+    <link rel="stylesheet" href="{% static 'vendor/font-awesome/css/font-awesome.min.css' %}">
+    <!-- Custom Font Icons CSS-->
+    <link rel="stylesheet" href="{% static 'css/font.css' %}">
+    <!-- Google fonts - Muli-->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Muli:300,400,700">
+    <!-- theme stylesheet-->
+    <link rel="stylesheet" href="{% static 'css/style.default.css' %}" id="theme-stylesheet">
+    <!-- Custom stylesheet - for your changes-->
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+      <link rel="stylesheet" href="{% static 'css/cropper.css' %}">
+    <!-- Favicon-->
+    <link rel="shortcut icon" href="{% static 'images/favicon.ico' %}">
+    <!-- Tweaks for older IEs--><!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+        <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script><![endif]-->
+      <style>
+                #my_canvas {
+          width: 562px;
+          height: 460px;
+          display: block;
+      }
+
+      </style>
+  </head>
+  <body>
+    <script>
+        var fps = 20;
+        var time_interval = 1000 / fps;
+    </script>
+
+    <header class="header">
+      <nav class="navbar navbar-expand-lg">
+        <div class="container-fluid d-flex align-items-center justify-content-between">
+          <div class="navbar-header">
+            <!-- Navbar Header--><a href="{% url 'video' %}" class="navbar-brand">
+              <div class="brand-text brand-big visible text-uppercase"><strong class="text-primary">Mechanism</strong><strong>Design</strong></div>
+              <div class="brand-text brand-sm"><strong class="text-primary">M</strong><strong>D</strong></div></a>
+            <!-- Sidebar Toggle Btn-->
+            <button class="sidebar-toggle"><i class="fa fa-long-arrow-left"></i></button>
+          </div>
+        </div>
+      </nav>
+    </header>
+    <div class="d-flex align-items-stretch">
+      <!-- Sidebar Navigation-->
+      <nav id="sidebar">
+        <!-- Sidebar Header-->
+        <div class="sidebar-header d-flex align-items-center">
+          <div class="title">
+            <h1 class="h5">Shu Xin</h1>
+            <p>Web Designer</p>
+          </div>
+        </div>
+        <!-- Sidebar Navidation Menus--><span class="heading">Main</span>
+        <ul class="list-unstyled h5">
+          <li><a href="{% url 'video' %}"> <i class="icon-home"></i><br>Sampling </a></li>
+          <li><a href="{% url 'joint' %}"> <i class="icon-grid"></i><br>Constraints </a></li>
+          <li><a href="{% url 'PositionSyn' %}"> <i class="fa fa-bar-chart"></i>Mechanism&nbsp;Evaluation </a></li>
+          <li class="active"><a href="{% url 'para' %}"> <i class="icon-padnote"></i>Parameters&nbsp;Visualization </a></li>
+        </ul>
+      </nav>
+      <!-- Sidebar Navigation end-->
+      <div class="page-content">
+        <!-- Page Header-->
+        <div class="page-header no-margin-bottom">
+          <div class="container-fluid">
+{#            <h2 class="h5 no-margin-bottom">Properties</h2>#}
+              <div class="h3">
+              <ul class="breadcrumb">
+                  <li class="breadcrumb-item"><a href="{% url 'video' %}">Sampling</a></li>
+                  <li class="breadcrumb-item"><a href="{% url 'joint2' num 1 %}">Constraints</a></li>
+                  <li class="breadcrumb-item"><a href="{% url 'ForceSyn1' num %}">Mechanism&nbsp;Evaluation</a></li>
+                  <li class="breadcrumb-item">Parameters&nbsp;Visualization</li>
+{#                  <li class="breadcrumb-item">About</li>#}
+              </ul>
+              </div>
+          </div>
+        </div><br>
+
+        <section class="no-padding-top">
+          <div class="container-fluid">
+            <div class="row">
+              <div class="col-lg-9">
+                <div class="row">
+                  <div class="col-lg-6">
+                      <div class="card">
+                          <div class="card-body">
+                              <div class="mb-3">
+                                  <h5 class="card-title mb-0">2D View</h5>
+                              </div>
+                              <div class="img-container">
+                                <img id="videoImg">
+                              </div>
+                          </div>
+                          <div class="card-footer">
+                              <button class="btn btn-success" type="button" id='playButton'>播放模拟视频</button>
+                          </div>
+                      </div>
+                  </div>
+
+
+                  <div class="col-lg-6">
+                      <div class="card">
+                          <div class="card-body">
+                              <div class="mb-3">
+                                  <h5 class="card-title mb-0">3D View</h5>
+                              </div>
+                              <div class="img-container">
+                                  <canvas id="my_canvas"></canvas>
+                              </div>
+                          </div>
+                          <div class="card-footer">
+                          </div>
+                      </div>
+                  </div>
+                </div>
+
+                <div class="row">
+
+                    <div class="col-lg-6">
+                    <div class="block">
+                      <div class="title"><strong class="d-block">endPoint</strong>
+                        <div class="line-chart chart margin-bottom-sm">
+                          <canvas id="lineChartCustom3"></canvas>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-lg-6">
+                    <div class="block">
+                      <div class="title"><strong class="d-block">LinkLength</strong>
+                        <div class="bar-chart chart margin-bottom-sm">
+                          <canvas id="barChartCustom1"></canvas>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-lg-6">
+                    <div class="block">
+                      <div class="title"><strong class="d-block">Timing</strong>
+                        <div class="line-chart chart margin-bottom-sm">
+                          <canvas id="lineChartCustom2"></canvas>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                    <div class="col-lg-6">
+                    <div class="block">
+                      <div class="title"><strong class="d-block">FittingError</strong>
+                        <div class="bar-chart chart margin-bottom-sm">
+                          <canvas id="barChartCustom2"></canvas>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+
+              <div class="col-lg-3">
+                <!-- 右侧机构信息-->
+                <div class="block">
+                  <div class="title">
+                      <strong class="d-block">Mechanism&nbsp; Dimensions</strong>
+                  </div>
+                  <form class="form">
+                    <div class="form-group row">
+                      <label class="col-sm-3 form-control-label">linkage &nbsp;ID</label>
+                      <div class="col-sm-9">
+                        <select name="select" id="selID" class="form-control mb-3 mb-3" onchange="s_click(this)">
+                            {% for i in mechanical %}
+                          <option value="{{ i }}">result&nbsp;{{ i }}</option>
+                            {% endfor %}
+                        </select>
+                      </div>
+                    </div>
+
+                    {% for i in linkNum %}
+                    <div class="title"><span class="center-block">Link{{ i }}</span></div>
+                    <div class="form-group row">
+                      <label class="col-sm-4 form-control-label">linkLength</label>
+                      <div class="col-sm-8">
+                      <input type="text" id="linkLength{{ i }}" class="form-control" readonly="">
+                      </div>
+                    </div>
+                    <div class="form-group row">
+                      <label class="col-sm-4 form-control-label">angularVelocity</label>
+                      <div class="col-sm-8">
+                      <input type="text" id="angularVelocity{{ i }}" class="form-control" readonly="" name="">
+                      </div>
+                    </div>
+                    <div class="form-group row">
+                      <label class="col-sm-4 form-control-label">initialPhaseAngle</label>
+                      <div class="col-sm-8">
+                      <input type="text" id="initialPhaseAngle{{ i }}" class="form-control" readonly="" name="">
+                      </div>
+                    </div>
+                      {% endfor %}
+
+                    <!--机构整体参数 -->
+                    <div class="title"><span class="center-block">Parameters</span></div>
+                    <div class="form-group row">
+                      <label class="col-sm-4 form-control-label">fittingError</label>
+                      <div class="col-sm-8">
+                      <input type="text" id="fittingError" class="form-control" readonly="" name="linkError" value="{{ linkError }}">
+                      </div>
+                    </div>
+                    <div class="form-group row">
+                      <label class="col-sm-4 form-control-label">fixedPivot-Xaxis</label>
+                      <div class="col-sm-8">
+                      <input type="text" id="fixedPivotx" class="form-control" readonly="">
+                      </div>
+                    </div>
+                    <div class="form-group row">
+                      <label class="col-sm-4 form-control-label">fixedPivot-Yaxis</label>
+                      <div class="col-sm-8">
+                      <input type="text" id="fixedPivoty" class="form-control" readonly="">
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <footer class="footer">
+          <div class="footer__block block no-margin-bottom">
+
+          </div>
+        </footer>
+      </div>
+    </div>
+      <div id="preloader" class="preloader"></div>
+  <div id="afterloader" class="preloader" style="display: none;"></div>
+    <!-- JavaScript files-->
+    <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+    <script src="{% static 'vendor/popper.js/umd/popper.min.js' %}"> </script>
+    <script src="{% static 'vendor/bootstrap/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'vendor/jquery.cookie/jquery.cookie.js' %}"> </script>
+    <script src="{% static 'vendor/jquery-validation/jquery.validate.min.js' %}"></script>
+    <script src="{% static 'js/front.js' %}"></script>
+
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'js/metismenu.min.js' %}"></script>
+
+    <script src="{% static 'plugins/raphael/raphael.min.js' %}"></script>
+    <script src="{% static 'pages/dashboard-demo.js' %}"></script>
+    <script src="{% static 'js/theme.js' %}"></script>
+    <script src="{% static 'plugins/switchery/switchery.min.js' %}"></script>
+    <script src="{% static 'vendor/chart.js/Chart.min.js' %}"></script>
+    <script src="{% static 'js/charts-test.js' %}"></script>
+
+
+
+    <script>
+    var osel=document.getElementById("selID"); //得到select的ID
+    var opts=osel.getElementsByTagName("option");//得到数组option
+    opts[{{ resultIndex }}].selected=true;
+
+    const linklength = [];
+    {% for l in linkLength %}
+        linklength.push({{ l }});
+    {% endfor %}
+    var maxlength = Math.max.apply(null, linklength);
+
+    const initialPhase = [];
+    {% for m in initialPhase %}
+        initialPhase.push({{ m }});
+    {% endfor %}
+
+    const angularVelocity = [];
+    {% for n in velocity %}
+        angularVelocity.push({{ n }});
+    {% endfor %}
+
+    const linkNum = [];
+    {% for j in linkNum %}
+        linkNum.push('link'+{{ j }});
+        document.getElementById('linkLength{{ j }}').value = linklength[{{ j }}];
+        document.getElementById('initialPhaseAngle{{ j }}').value = initialPhase[{{ j }}];
+        document.getElementById('angularVelocity{{ j }}').value = angularVelocity[{{ j }}];
+    {% endfor %}
+
+    document.getElementById('fixedPivotx').value = {{ fixpivot_x }};
+    document.getElementById('fixedPivoty').value = {{ fixpivot_y }};
+
+    let k = {{ num }};
+    const error = [];
+    const img_src = [];
+
+
+    let videoImg = document.getElementById('videoImg');
+    videoImg.src = "{% static 'images/result_video_expand/' %}" +'{{ resultIndex }}'+'/'+ 0 + '.jpg?t=' + Math.random();
+    const playButton = document.getElementById('playButton');
+    playButton.classList.add("btn-outline-info");
+
+    playButton.onclick = function (){
+        for (let j = 0; j < k; j ++) {
+              img_src.push("{% static 'images/result_video_expand/' %}" +'{{ resultIndex }}'+'/'+ j + '.jpg?t=' + Math.random());
+          }
+        video_play();
+    };
+
+
+    function video_play() {
+        let i = 0;
+      replay = window.setInterval(function() {
+          videoImg.src = img_src[i];
+          i = i + 1;
+          if (i === k) {
+              clearInterval(replay);
+          }
+      }, time_interval);
+  }
+
+    const timing = [];
+    {% for l in timing %}
+    timing.push({{ l }});
+    {% endfor %}
+
+    const motionx = [];
+    var xmax =Math.max.apply(null, motionx);
+    {% for l in motionx %}
+    motionx.push({{ l }});
+    {% endfor %}
+
+    const motiony = [];
+    var ymin = Math.min.apply(null, motiony);
+    {% for l in motiony %}
+    motiony.push({{ l }});
+    {% endfor %}
+
+    const endVelocity = [];
+    var Vmax = Math.max.apply(null, endVelocity);
+    var Vmin = Math.min.apply(null, endVelocity);
+    {% for l in endVelocity %}
+    endVelocity.push({{ l }});
+    {% endfor %}
+
+    const endAcceleration = [];
+    {% for l in endAcceleration %}
+    endAcceleration.push({{ l }});
+    {% endfor %}
+
+    const error_list = [];
+    {% for l in error_list %}
+        error_list.push({{ l }});
+    {% endfor %}
+
+    const mechanical_num = [];
+    {% for l in mechanical %}
+        mechanical_num.push('result'+{{ l }});
+    {% endfor %}
+
+
+    </script>
+
+
+    <script type="text/javascript">
+     function s_click(obj){
+         var changeindex = obj.options[obj.selectedIndex].value;
+         var urlchange = "{% url 'paraForce1' num 0 %}"
+         urlchange = urlchange.replace(/0/,changeindex)
+         window.location.href =urlchange;}
+    </script>
+<script type="module">
+    import * as THREE from "{% static 'js/three.module.js' %}";
+    import {GUI} from "{% static 'js/dat.gui.module.js' %}";
+    import {OrbitControls} from "{% static 'js/OrbitControls.js' %}";
+    import {OBJLoader} from "{% static 'js/OBJLoader.js' %}";
+
+    function main() {
+        const canvas = document.getElementById('my_canvas');
+        const renderer = new THREE.WebGLRenderer({canvas});
+
+        const fov = 45;
+        const aspect = 2;  // the canvas default
+        const near = 0.1;
+        const far = 1000;
+        const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+        camera.position.set(100, 150, 200);
+
+        const controls = new OrbitControls(camera, canvas);
+        controls.target.set(0, 20, 0);
+        controls.update();
+
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xCCCCCC);
+
+        let movement = false;
+        let current_index = 0;
+        let delta_index = 1;
+        let num = 0;
+        num = {{ num }};
+        const length_scale = 0.3;
+        const limb_scale = 0.9;  //模型与小臂比例
+
+        let fixpivot_x = 0;
+        fixpivot_x = {{ fixpivot_x }};
+        let fixpivot_y = 0;
+        fixpivot_y = {{ fixpivot_y }};
+
+        const phase_limb = [];
+        {% for l in phase_limb %}
+            phase_limb.push({{ l }});
+        {% endfor %}
+
+        let num_role = 0;
+        num_role = {{ num_role }};
+        const gui = new GUI();
+        let Options = function() {
+            this.move_func = function () {
+                movement = !movement;
+            };
+        };
+        const options = new Options();
+        gui.add(options, 'move_func').name('开始/暂停');
+
+        const track = [];
+        const hipMotion=[];
+
+        let flag_track = true;
+
+        const material_role = [];
+        material_role.push(new THREE.MeshPhongMaterial({color: '#EE7942'}));
+        material_role.push(new THREE.MeshPhongMaterial({color: '#696969'}));
+        const material_white = new THREE.MeshPhongMaterial({color: '#DDDDDD'});
+        const material_wheel = [];
+        material_wheel.push(new THREE.MeshPhongMaterial({color: '#548B54'}));
+        material_wheel.push(new THREE.MeshPhongMaterial({color: '#00CDCD'}));
+        const material_ladder = new THREE.MeshPhongMaterial({color: '#030303'});
+        const material_track = new THREE.LineBasicMaterial({color: '#DD1111'});
+        const r_role = 5;
+        const r_pole = 2;
+        const r_track = 0.5;
+        const r_wheel = [];
+
+        const depth_role = 3;
+        const depth_wheel = 4;
+        const depth_pole = 8;
+        const depth_ladder = 5;
+        const position_z_track = (depth_role + depth_wheel + depth_pole - 2) * (num_role - 2)
+                                  + 2 * depth_role + depth_wheel + r_track;
+        const extrudeSettings_role = {
+            step: 1,
+            depth: depth_role,
+            bevelEnabled: false,
+        };
+        const extrudeSettings_wheel = {
+            step: 1,
+            depth: depth_wheel,
+            bevelEnabled: false,
+        };
+        const extrudeSettings_pole = {
+            step: 1,
+            depth: depth_pole,
+            bevelEnabled: false,
+        };
+
+        // phases & lengths init
+        const phases = [];
+        const lengths = [];
+        {
+            {% for phase in phases %}
+            {
+                const tmp = [];
+                {% for p in phase %}
+                    tmp.push(Math.PI / 180 * {{ p }});
+                {% endfor %}
+                phases.push(tmp);
+            }
+            {% endfor %}
+            {% for l in linkLength %}
+            {
+                lengths.push(length_scale * {{ l }});
+            }
+            {% endfor %}
+            for (let i = num_role - 1; i > 0; i --) {
+                for (let j = 0; j < num; j ++) {
+                    phases[i][j] -= phases[i - 1][j];
+                }
+            }
+        }
+
+        // r_wheel init
+        for (let i = 0; i < num_role - 1; i ++) {
+            r_wheel.push(Math.min(15, 0.4 * lengths[i]));
+        }
+
+        const systems = [];
+        // systems init
+        for (let i = 0; i < num_role; i ++) {
+            const current_system = new THREE.Object3D();
+            if (i > 0) {
+                current_system.position.x = lengths[i - 1];
+                if (i < num_role - 1) {
+                    current_system.position.z = depth_role + depth_wheel + depth_pole - 2;
+                } else {
+                    current_system.position.z = depth_role + depth_wheel;
+                }
+                systems[i - 1].add(current_system);
+            } else {
+                scene.add(current_system);
+            }
+            systems.push(current_system);
+        }
+
+        // limb_systems
+        const limb_systems=[];
+        const limb_current_system = new THREE.Object3D();
+        scene.add(limb_current_system);
+        limb_systems.push(limb_current_system);
+        limb_current_system.position.x = 0.3*(470-fixpivot_x);
+        limb_current_system.position.y = 0.3*(-370-fixpivot_y);
+        limb_current_system.position.z = -15;
+        limb_systems[0].add(limb_current_system);
+        limb_systems.push(limb_current_system);
+
+        // draw role
+        for (let i = 0; i < num_role; i ++) {
+            const l = lengths[i];
+            const shape = new THREE.Shape();
+            shape.moveTo(0, 0);
+            shape.arc(0, 0, r_role, Math.PI / 2, -Math.PI / 2, false);
+            shape.lineTo(l, -r_role);
+            shape.lineTo(l, r_role);
+            shape.arc(0, -r_role, r_role, -Math.PI / 2, Math.PI / 2, false);
+            shape.lineTo(0, r_role);
+            const geometry = new THREE.ExtrudeBufferGeometry(shape, extrudeSettings_role);
+            const mesh = new THREE.Mesh(geometry, material_role[i & 1]);
+            if (i < num_role - 1) {
+                mesh.position.z = depth_wheel;
+            }
+            systems[i].add(mesh);
+        }
+
+        // draw ending point
+        {
+            const geometry = new THREE.Geometry();
+            const material = new THREE.PointsMaterial({ size: 0.1 });
+            const mesh = new THREE.Points(geometry, material);
+            geometry.vertices.push(new THREE.Vector3( 0, 0, 0));
+            mesh.position.x = lengths[num_role - 1];
+            mesh.position.z = 1;
+            mesh.name = 'ending_point';
+            systems[num_role - 1].add(mesh);
+        }
+
+        //draw hipMotion
+       {
+            const geometry = new THREE.Geometry();
+           //const geometry = new THREE.ExtrudeBufferGeometry(shape, extrudeSettings_pole);
+           const material = new THREE.PointsMaterial({size: 0.1});
+            const mesh = new THREE.Points(geometry, material);
+            geometry.vertices.push(new THREE.Vector3(0, 0, 0));
+            mesh.position.y = 240*0.3; //上臂长度
+            mesh.position.z = 1;
+            mesh.name = 'hipMotion_ending_point';
+            limb_systems[0].add(mesh);
+
+        }
+        // draw white pole
+        for (let i = 0; i < num_role - 1; i ++) {
+            const shape = new THREE.Shape();
+            shape.moveTo(0, 0);
+            shape.arc(0, 0, r_pole, 0, 2 * Math.PI, false);
+            const geometry = new THREE.ExtrudeBufferGeometry(shape, extrudeSettings_pole);
+            const mesh = new THREE.Mesh(geometry, material_white);
+            systems[i].add(mesh);
+            mesh.position.z = 1 - depth_pole;
+        }
+
+        // draw wheel
+        for (let i = 0; i < num_role - 1; i ++) {
+            const shape = new THREE.Shape();
+            shape.moveTo(0, 0);
+            shape.arc(0, 0, r_wheel[i], 0, 2 * Math.PI, false);
+            const geometry = new THREE.ExtrudeBufferGeometry(shape, extrudeSettings_wheel);
+            const mesh_1 = new THREE.Mesh(geometry, material_wheel[i & 1]);
+            const mesh_2 = new THREE.Mesh(geometry, material_wheel[i & 1]);
+            systems[i].add(mesh_1);
+            systems[i].add(mesh_2);
+            mesh_2.scale.set(0.6, 0.6, 1);
+            mesh_2.position.x = lengths[i];
+        }
+
+        // draw belt
+        for (let i = 0; i < num_role - 1; i ++) {
+            const r1 = r_wheel[i];
+            const r2 = 0.6 * r_wheel[i];
+            const r = r2 - r1;
+            const l = lengths[i];
+            const delta_x1 = r1 * r / l;
+            const delta_y1 = Math.sqrt(Math.pow(r1, 2) - Math.pow(delta_x1, 2));
+            const delta_x2 = r2 * r / l;
+            const delta_y2 = Math.sqrt(Math.pow(r2, 2) - Math.pow(delta_x2, 2));
+
+            const shape_belt1 = new THREE.Shape();
+            shape_belt1.moveTo(0, 0);
+            shape_belt1.lineTo(l + delta_x2 - delta_x1, delta_y2 - delta_y1);
+            const geometry_belt1 = new THREE.ExtrudeBufferGeometry(shape_belt1, extrudeSettings_wheel);
+            const mesh_belt1 = new THREE.Mesh(geometry_belt1, material_wheel[i & 1]);
+            mesh_belt1.position.set(delta_x1, delta_y1, 0);
+            systems[i].add(mesh_belt1);
+
+            const shape_belt2 = new THREE.Shape();
+            shape_belt2.moveTo(0, 0);
+            shape_belt2.lineTo(l + delta_x2 - delta_x1, -delta_y2 + delta_y1);
+            const geometry_belt2 = new THREE.ExtrudeBufferGeometry(shape_belt2, extrudeSettings_wheel);
+            const mesh_belt2 = new THREE.Mesh(geometry_belt2, material_wheel[i & 1]);
+            mesh_belt2.position.set(delta_x1, -delta_y1, 0);
+            systems[i].add(mesh_belt2);
+        }
+
+        const ladder_a = 0.8 * r_wheel[0];
+        const ladder_b = 1.1 * r_wheel[0];
+        const ladder_c = 1.5 * r_wheel[0];
+        // draw ladder
+        {
+            const r = Math.sqrt(2) * ladder_a;
+            const extrudeSettings = {
+                step: 1,
+                depth: depth_ladder,
+                bevelEnabled: false,
+            };
+            const shape_ladder = new THREE.Shape();
+            shape_ladder.moveTo(0, 0);
+            shape_ladder.arc(0, 0, r, Math.PI / 4, 3 * Math.PI / 4, false);
+            shape_ladder.lineTo(-ladder_c, -ladder_b);
+            shape_ladder.lineTo(ladder_c, -ladder_b);
+            shape_ladder.lineTo(ladder_a, ladder_a);
+            const geometry_ladder = new THREE.ExtrudeBufferGeometry(shape_ladder, extrudeSettings);
+            const mesh_ladder = new THREE.Mesh(geometry_ladder, material_ladder);
+            mesh_ladder.position.z = 2 - depth_pole - depth_ladder;
+            scene.add(mesh_ladder);
+        }
+
+    //Load upperlimb obj
+        {
+            const objLoader = new OBJLoader();
+            objLoader.load('{% static 'obj/upperlimb.obj' %}', function (object) {
+                object.position.set(0, 0, -15);
+
+                object.scale.set(length_scale*limb_scale,length_scale*limb_scale,length_scale*limb_scale);
+                object.rotation.y = -Math.PI * 0.5;
+                object.traverse( function ( child ) {
+				//将加载到的纹理给模型的材质
+                    if ( child instanceof THREE.Mesh ) {
+                        child.material=
+                        new THREE.MeshPhongMaterial({color: '#8c8c8c',side: THREE.DoubleSide});
+                    }
+                });
+                limb_systems[0].add(object);
+            });
+        }
+
+        //Load upperbody obj
+        {
+            const objLoader = new OBJLoader();
+            objLoader.load('{% static 'obj/fixedbody.obj' %}', function (object) {
+
+                object.scale.set(length_scale*limb_scale,length_scale*limb_scale,length_scale*limb_scale);
+                object.rotation.y = -Math.PI * 0.5;
+                object.position.z = -20;
+                object.position.x = 240*0.3*Math.cos(20*Math.PI/180)+0.3*(470-fixpivot_x);
+                object.position.y = 240*0.3*Math.sin(20*Math.PI/180)+0.3*(-370-fixpivot_y);
+                object.traverse( function ( child ) {
+				//将加载到的纹理给模型的材质
+                    if ( child instanceof THREE.Mesh ) {
+                        child.material=
+                        new THREE.MeshPhongMaterial({color: '#8c8c8c',side: THREE.DoubleSide});
+                    }
+                });
+            scene.add(object);
+
+            });
+        }
+
+        // draw plane
+        {
+            const planeSize = 50;
+            const loader = new THREE.TextureLoader();
+            const texture = loader.load("{% static 'images/checker.png' %}");
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            texture.magFilter = THREE.NearestFilter;
+            const repeats = planeSize / 2;
+            texture.repeat.set(repeats, repeats);
+
+            const planeGeo = new THREE.PlaneBufferGeometry(planeSize, planeSize);
+            const planeMat = new THREE.MeshPhongMaterial({
+                map: texture,
+                side: THREE.DoubleSide,
+            });
+            const mesh = new THREE.Mesh(planeGeo, planeMat);
+            mesh.rotation.x = Math.PI * -.5;
+            mesh.position.y = -ladder_b;
+            mesh.position.z = 2 - depth_pole - depth_ladder / 2;
+            scene.add(mesh);
+        }
+
+        // system rotate
+        for (let i = 0; i < num_role; i ++) {
+            systems[i].rotateZ(phases[i][current_index]);
+        }
+        limb_systems[0].rotateZ(phase_limb[current_index]);
+
+        // ambient light
+        {
+            const color = 0xCCCCCC;
+            const intensity = 0.5;
+            const ambient_light = new THREE.AmbientLight(color, intensity);
+            scene.add(ambient_light);
+        }
+        // directional light
+        {
+            const color = 0xFFFFFF;
+            const intensity = 0.8;
+            const light = new THREE.DirectionalLight(color, intensity);
+            light.position.set(0, 10, 0);
+            light.target.position.set(-5, 0, 0);
+            light.castShadow = true;
+            scene.add(light);
+            scene.add(light.target);
+        }
+
+        function resizeRendererToDisplaySize(renderer) {
+            const canvas = renderer.domElement;
+            const width = canvas.clientWidth;
+            const height = canvas.clientHeight;
+            const needResize = canvas.width !== width || canvas.height !== height;
+            if (needResize) {
+                renderer.setSize(width, height, false);
+            }
+            return needResize;
+        }
+
+        function draw_track(position_z0,drawTrack) {
+            const len = drawTrack.length;
+            if (len <= 1) {
+                return;
+            }
+            const p1 = new THREE.Vector3(drawTrack[len - 1][0], drawTrack[len - 1][1], position_z0);
+            const x0 = (drawTrack[len - 1][0] + drawTrack[len - 2][0]) / 2;
+            const y0 = (drawTrack[len - 1][1] + drawTrack[len - 2][1]) / 2;
+            const z0 = position_z0;
+            const length = Math.sqrt(Math.pow(drawTrack[len - 1][0] - drawTrack[len - 2][0], 2) +
+                                  Math.pow(drawTrack[len - 1][1] - drawTrack[len - 2][1], 2));
+            const geometry = new THREE.CylinderGeometry(r_track, r_track, length);
+            const euler = new THREE.Euler(Math.PI / 2, Math.PI, 0);
+            const matrix = new THREE.Matrix4().makeRotationFromEuler(euler);
+            geometry.applyMatrix(matrix);
+            const mesh = new THREE.Mesh(geometry, material_track);
+            mesh.position.set(x0, y0, z0);
+            mesh.lookAt(p1);
+            scene.add(mesh);
+        }
+
+        function render() {
+            if (resizeRendererToDisplaySize(renderer)) {
+                const canvas = renderer.domElement;
+                camera.aspect = canvas.clientWidth / canvas.clientHeight;
+                camera.updateProjectionMatrix();
+            }
+
+            if (movement) {
+                if (flag_track) {
+                    const obj = systems[num_role - 1].getObjectByName('ending_point');
+                    const position = new THREE.Vector3(0, 0, 0);
+                    obj.getWorldPosition(position);
+                    track.push([position.x, position.y]);
+                    draw_track(position_z_track,track);
+
+                    const objHip = limb_systems[0].getObjectByName('hipMotion_ending_point');
+                    const positionHip = new THREE.Vector3(0, 0, 0);
+                    objHip.getWorldPosition(positionHip);
+                    hipMotion.push([positionHip.x, positionHip.y]);
+                    draw_track(-20,hipMotion);
+                }
+
+                for (let i = 0; i < num_role; i ++) {
+                    systems[i].rotation.z = phases[i][current_index];
+                }
+                limb_systems[0].rotation.z = phase_limb[current_index];
+                current_index += delta_index;
+                if (current_index === 0 || current_index === num - 1) {
+                    delta_index = -delta_index;
+                    flag_track = false;
+                }
+            }
+
+            renderer.render(scene, camera);
+
+            setTimeout( function () {
+                requestAnimationFrame(render);
+            }, 1000 / 40);
+        }
+
+        requestAnimationFrame(render);
+    }
+main();
+   </script>
+
+  </body>
+</html>

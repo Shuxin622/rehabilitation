@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>
+        Path-Force Solver
+    </title>
+        {% load static %}
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="all,follow">
+    <!-- Bootstrap CSS-->
+      <link rel="stylesheet" href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}">
+    <!-- Font Awesome CSS-->
+    <link rel="stylesheet" href="{% static 'vendor/font-awesome/css/font-awesome.min.css' %}">
+    <!-- Custom Font Icons CSS-->
+    <link rel="stylesheet" href="{% static 'css/font.css' %}">
+    <!-- Google fonts - Muli-->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Muli:300,400,700">
+    <!-- theme stylesheet-->
+    <link rel="stylesheet" href="{% static 'css/style.default.css' %}" id="theme-stylesheet">
+    <!-- Custom stylesheet - for your changes-->
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+      <link rel="stylesheet" href="{% static 'css/cropper.css' %}">
+    <!-- Favicon-->
+    <link rel="shortcut icon" href="{% static 'images/favicon.ico' %}">
+    <!-- Tweaks for older IEs--><!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+        <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script><![endif]-->
+  </head>
+  <body>
+    <header class="header">
+      <nav class="navbar navbar-expand-lg">
+        <div class="container-fluid d-flex align-items-center justify-content-between">
+          <div class="navbar-header">
+            <!-- Navbar Header--><a href="{% url 'video' %}" class="navbar-brand">
+              <div class="brand-text brand-big visible text-uppercase"><strong class="text-primary">Mechanism</strong><strong>Design</strong></div>
+              <div class="brand-text brand-sm"><strong class="text-primary">M</strong><strong>D</strong></div></a>
+            <!-- Sidebar Toggle Btn-->
+            <button class="sidebar-toggle"><i class="fa fa-long-arrow-left"></i></button>
+          </div>
+        </div>
+      </nav>
+    </header>
+    <div class="d-flex align-items-stretch">
+      <!-- Sidebar Navigation-->
+      <nav id="sidebar">
+        <!-- Sidebar Header-->
+        <div class="sidebar-header d-flex align-items-center">
+          <div class="title">
+            <h1 class="h5">Shu Xin</h1>
+            <p>Web Designer</p>
+          </div>
+        </div>
+        <!-- Sidebar Navidation Menus--><span class="heading">Main</span>
+        <ul class="list-unstyled h5">
+          <li><a href="{% url 'video' %}"> <i class="icon-home"></i><br>Sampling </a></li>
+          <li><a href="{% url 'joint' %}"> <i class="icon-grid"></i><br>Constraints </a></li>
+          <li class="active"><a href="{% url 'PositionSyn' %}"> <i class="fa fa-bar-chart"></i>Mechanism&nbsp;Evaluation </a></li>
+          <li><a href="{% url 'para' %}"> <i class="icon-padnote"></i>Properties </a></li>
+        </ul>
+      </nav>
+      <!-- Sidebar Navigation end-->
+      <div class="page-content">
+        <!-- Page Header-->
+        <div class="page-header no-margin-bottom">
+          <div class="container-fluid">
+            <div class="h3">
+              <ul class="breadcrumb">
+                  <li class="breadcrumb-item"><a href="{% url 'video' %}">Sampling</a></li>
+                  <li class="breadcrumb-item"><a href="{% url 'joint2' num 1 %}">Constraints</a></li>
+                  <li class="breadcrumb-item">Mechanism&nbsp;Evaluation</li>
+                  <li class="breadcrumb-item"><a href="{% url 'para' %}">Parameters&nbsp;Visualization</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+          <div class="container-fluid">
+            <div class="h4">
+              <ul class="breadcrumb">
+                  <li class="breadcrumb-item"><a href="{% url 'PositionSyn1' num %}">Path Synthesis</a></li>
+                  <li class="breadcrumb-item">Path-Force Synthesis</li>
+              </ul>
+            </div>
+          </div>
+        <!-- Breadcrumb-->
+          <form action="{% url 'ratioindexForce' %}" method="post" id="numForm">
+              {% csrf_token %}
+          <input type="hidden" id="num" name="num" value="{{ num }}">
+          <input type="hidden" id="resultIndex" name="resultIndex" value="">
+{#          <input type="hidden" id="mechanical_num" name="mechanical_num" value="{{ mechanical_num }}">#}
+      <section>
+          <div class="container-fluid">
+            <div class="row">
+                {% for i in mechanical %}
+              <div class="col-lg-4">
+                <div class="card">
+                  <div class="card-body">
+                    <div class="mb-3">
+                      <h5 class="card-title mb-0">result{{ i }}</h5></div>
+                      <div class="img-container">
+                        <img id="previewImgForce{{ i }}" src="{% static 'images/empty.jpg' %}">
+                      </div>
+                  </div>
+                  <div class="card-footer">
+                      <div class="radio">
+                          <label><input type="radio" name="ratioIndex" value="{{ i }}">Select</label>
+                      </div>
+                  </div>
+                </div>
+              </div>
+                {% endfor %}
+            </div>
+              <button class="btn btn-success" type="button" id="simButton">Simulation</button>
+          </div>
+        </section>
+          </form>
+        <footer class="footer">
+          <div class="footer__block block no-margin-bottom">
+
+          </div>
+        </footer>
+      </div>
+    </div>
+
+    <!-- JavaScript files-->
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="{% static 'vendor/bootstrap/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/front.js' %}"></script>
+    <script src="{% static 'js/metismenu.min.js' %}"></script>
+    <script src="{% static 'js/waves.js' %}"></script>
+    <script src="{% static 'js/simplebar.min.js' %}"></script>
+
+    <script src="{% static 'plugins/raphael/raphael.min.js' %}"></script>
+    <script src="{% static 'pages/dashboard-demo.js' %}"></script>
+    <script src="{% static 'js/theme.js' %}"></script>
+    <script src="{% static 'plugins/switchery/switchery.min.js' %}"></script>
+
+  <script>
+      {% for i in mechanical %}
+            previewImgForce = document.getElementById('previewImgForce{{ i }}');
+          previewImgForce.src = "{% static 'images/previewImgForce/' %}" + "{{ i }}.jpg?t=" + Math.random();
+      {% endfor %}
+      simButton = document.getElementById('simButton')
+
+
+      simButton.onclick = function(){
+           var index = $("input[name='ratioIndex']:checked").val();
+          $('#resultIndex').val(index);
+      document.getElementById("numForm").submit();
+      };
+
+
+  </script>
+  </body>
+</html>

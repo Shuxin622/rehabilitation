@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html>
+  <head> 
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Constraints</title>
+      {% load static %}
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="all,follow">
+    <!-- Bootstrap CSS-->
+     <link rel="stylesheet" href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}">
+    <!-- Font Awesome CSS-->
+    <link rel="stylesheet" href="{% static 'vendor/font-awesome/css/font-awesome.min.css' %}">
+    <!-- Custom Font Icons CSS-->
+    <link rel="stylesheet" href="{% static 'css/font.css' %}">
+    <!-- Google fonts - Muli-->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Muli:300,400,700">
+    <!-- theme stylesheet-->
+    <link rel="stylesheet" href="{% static 'css/style.default.css' %}" id="theme-stylesheet">
+    <!-- Custom stylesheet - for your changes-->
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+      <link rel="stylesheet" href="{% static 'css/cropper.css' %}">
+    <!-- Favicon-->
+    <link rel="shortcut icon" href="{% static 'images/favicon.ico' %}">
+
+      <link rel="stylesheet" href="{% static 'css/bootstrap-slider.css' %}">
+    <link rel="stylesheet" href="{% static 'css/bootstrap-slider.min.css' %}">
+
+  </head>
+  <body>
+
+    <script>
+        var fps = 20;
+        var time_interval = 1000 / fps;
+    </script>
+
+    <header class="header">   
+      <nav class="navbar navbar-expand-lg">
+        <div class="container-fluid d-flex align-items-center justify-content-between">
+          <div class="navbar-header">
+            <!-- Navbar Header--><a href="{% url 'video' %}" class="navbar-brand">
+              <div class="brand-text brand-big visible text-uppercase"><strong class="text-primary">Mechanism</strong><strong>Design</strong></div>
+              <div class="brand-text brand-sm"><strong class="text-primary">M</strong><strong>D</strong></div></a>
+            <!-- Sidebar Toggle Btn-->
+            <button class="sidebar-toggle"><i class="fa fa-long-arrow-left"></i></button>
+          </div>
+        </div>
+      </nav>
+    </header>
+    <div class="d-flex align-items-stretch">
+      <!-- Sidebar Navigation-->
+      <nav id="sidebar">
+        <!-- Sidebar Header-->
+        <div class="sidebar-header d-flex align-items-center">
+          <div class="title">
+            <h1 class="h5">Shu Xin</h1>
+            <p>Web Designer</p>
+          </div>
+        </div>
+        <!-- Sidebar Navidation Menus--><span class="heading">Main</span>
+        <ul class="list-unstyled h5">
+          <li><a href="{% url 'video2' num 1 %}"> <i class="icon-home"></i><br>Sampling </a></li>
+          <li class="active"><a href="{% url 'joint3' num 1 1 %}"> <i class="icon-grid"></i><br>Constraints</a></li>
+          <li><a href="{% url 'PositionSyn' %}"> <i class="fa fa-bar-chart"></i>Mechanism&nbsp;Evaluation</a></li>
+          <li><a href="{% url 'para' %}"> <i class="icon-padnote"></i>Parameters&nbsp;Visualization</a></li>
+        </ul>
+      </nav>
+      <!-- Sidebar Navigation end-->
+      <div class="page-content">
+        <!-- Page Header-->
+        <div class="page-header no-margin-bottom">
+          <div class="container-fluid">
+              <div class="h3">
+                  <ul class="breadcrumb">
+                      <li class="breadcrumb-item"><a href="{% url 'video2' num 1 %}">Sampling</a></li>
+                      <li class="breadcrumb-item ">Constraints</li>
+                      <li class="breadcrumb-item "><a href="{% url 'PositionSyn' %}">Mechanism&nbsp;Evaluation</a></li>
+                      <li class="breadcrumb-item "><a href="{% url 'para' %}">Parameters&nbsp;Visualization</a></li>
+                  </ul>
+              </div>
+
+          </div>
+        </div><br>
+        <section class="no-padding-top">
+          <div class="container-fluid">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="card" id="left">
+                  <div class="card-body">
+                  <div class="mb-3">
+                  <h5 class="card-title mb-0">Joint&nbsp;Select</h5>
+                  </div>
+                      <form action="{% url 'jointTrack' %}" method="post" id="jointForm">
+                          {% csrf_token %}
+                          <div class="img-container">
+                              <img id="myImg">
+                          </div>
+                          <input type="text" id="dataX" class="form-control" name="x" style="display:none">
+                          <input type="text" id="dataY" class="form-control" name="y" style="display:none">
+                          <input type="text" id="dataWidth" class="form-control" name="width" style="display:none">
+                          <input type="text" id="dataHeight" class="form-control" name="height" style="display:none">
+                      </form>
+                  </div>
+                  <div class="card-footer">
+                      <button class="btn btn-primary btn-lg float-right" type="button"
+                        id="nextButton">Generate&nbsp;Joint&nbsp;Motion</button>
+                      <button class="btn btn-primary btn-lg float-right" type="button"
+                        id="generateButton" style="display: none">Regenerate</button>
+                 </div>
+                </div>
+              </div>
+
+
+              <div class="col-md-6">
+                <div class="card" id="right">
+                  <div class="card-body">
+                    <div class="mb-3">
+                      <h5 class="card-title mb-0">View</h5>
+                    </div>
+                      <div class="img-container">
+                        <img id="videoImg" src="{% static 'images/empty.jpg' %}">
+                      </div>
+                  </div>
+                  <div class="card-footer">
+                    <button class="btn btn-primary btn-lg float-right" type="button"
+                        id="resultButton">View&nbsp;Joint&nbsp;Motion</button>
+
+                    <button class="btn btn-primary btn-lg float-right" type="button"
+                        id="restart" style="display: none">Replay</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-lg-6">
+                <div class="card" id="left1">
+                  <div class="card-body">
+                    <div class="mb-3">
+                      <h5 class="card-title mb-0">Fixed&nbsp;Pivot&nbsp;Select</h5></div>
+                      <div class="img-container">
+                        <img id="pivotImg">
+                      </div>
+                  </div>
+{#                  <div class="card-footer">#}
+{#                    <button class="btn btn-primary btn-lg float-right" type="button"#}
+{#                        id="pivotButton">Generate&nbsp;Mechanism</button>#}
+{#                  </div>#}
+                </div>
+              </div>
+{#                            <form action=" " method="post" id="hingePointForm">#}
+{#                                {% csrf_token %}#}
+              <div class="col-lg-6">
+                  <form action=" " method="post" id="hingePointForm">
+                                {% csrf_token %}
+                <div class="card" id="rigth1">
+                  <div class="card-body">
+                    <div class="mb-3">
+                      <h5 class="card-title mb-0">Constraints</h5>
+                      <!--选择杆数后 对约束进行相应的disabled -->
+                    </div>
+                    <div class="container">
+                      <div class="container mb-5">
+                        <div class="d-flex justify-content-around mb-5">
+                          <div class="p-2 bg-dark text-white">Link&nbsp;Length<br><br>
+                              <input id="maxSlider" type="text" data-slider-min="400" data-slider-max="1000" data-slider-step="50" data-slider-value="800">
+                              <label for="maxSlider">Max&nbsp;Link&nbsp;Length</label><br><br>
+                              <input id="minSlider" type="text" data-slider-min="0" data-slider-max="200" data-slider-step="20" data-slider-value="50">
+                              <label for="minSlider">Min&nbsp;Link&nbsp;Length</label><br><br>
+
+                              <input type="hidden" id="maxLength" class="form-control" name="maxLength" value="200">
+                              <input type="hidden" id="minLength" class="form-control" name="minLength" value="50">
+
+                          </div>
+{#                            <form action=" " method="post" id="hingePointForm">#}
+{#                                {% csrf_token %}#}
+{#                                <input type="hidden" id="num" name="num" value="{{ num }}">#}
+                          <div class="p-2 bg-dark text-white">杆数<br><br>
+                              <div class="form-check">
+                                <label class="form-check-label">
+                                  <input type="checkbox" class="form-check-input" id="two_pole">Two-Bar&nbsp;Linkage
+                                </label>
+                              </div><br>
+                              <div class="form-check">
+                                <label class="form-check-label">
+                                  <input type="checkbox" class="form-check-input" id="three_pole" checked>Three-Bar&nbsp;Linkage
+                                </label>
+                              </div><br>
+                              <div class="form-check">
+                                <label class="form-check-label">
+                                  <input type="checkbox" class="form-check-input" id="four_pole">Four-Bar&nbsp;Linkage
+                                </label>
+                              </div>
+                              <input type="text" id="pivotX" class="form-control" name="pivotx" style="display:none">
+                              <input type="text" id="pivotY" class="form-control" name="pivoty" style="display:none">
+                              <input type="text" id="pivotWidth" class="form-control" name="pivotwidth" style="display:none">
+                              <input type="text" id="pivotHeight" class="form-control" name="pivotheight" style="display:none">
+                          </div>
+
+                            <div class="p-2 bg-dark text-white">Expansion&nbsp;Factor<br><br>
+
+{#                                <input id="expansionSlider" type="text" data-slider-min="0" data-slider-max="5" data-slider-step="1" data-slider-value="2" data-slider-orientation="vertical">#}
+{#                                <label for="expansionSlider">选择<br><br>扩展<br><br>系数</label><br><br>#}
+{#                                <div class="form-check">#}
+{#                                <label class="form-check-label">#}
+{#                                  <input type="radio" name="timeradio" class="form-check-input" id="timing1" checked>Timing&nbsp;1#}
+{#                                </label>#}
+{#                              </div><br>#}
+{#                              <div class="form-check">#}
+{#                                <label class="form-check-label">#}
+{#                                  <input type="radio" name="timeradio" class="form-check-input" id="timing2" >Timing&nbsp;2#}
+{#                                </label>#}
+{#                              </div><br>#}
+{#                              <div class="form-check">#}
+{#                                <label class="form-check-label">#}
+{#                                  <input type="radio" name="timeradio" class="form-check-input" id="timing3">Timing&nbsp;3#}
+{#                                </label>#}
+{#                              </div>#}
+                                <div>
+                                    <input id="optionsRadios1" type="radio" checked="" value="1" name="optionsRadios">
+                                    <label for="optionsRadios1">Option one</label>
+                                </div>
+                                <div>
+                                    <input id="optionsRadios2" type="radio" value="2" name="optionsRadios">
+                                    <label for="optionsRadios2">Option two </label>
+                                </div>
+                                <div>
+                                    <input id="optionsRadios3" type="radio" value="3" name="optionsRadios">
+                                    <label for="optionsRadios3">Option three </label>
+                                </div>
+                                <div>
+                                    <input id="optionsRadios4" type="radio" value="4" name="optionsRadios">
+                                    <label for="optionsRadios4">Option four </label>
+                                </div>
+                                <div>
+                                    <input id="optionsRadios5" type="radio" value="5" name="optionsRadios">
+                                    <label for="optionsRadios5">Option five </label>
+                                </div>
+                            </div>
+                            <input type="hidden" id="status_pole" name="status_pole">
+                            <input type="hidden" id="expansion" name="expansion" value = '2'>
+
+{#                            <input type="hidden" id="timenum" name="timenum">#}
+
+{#                            </form>#}
+
+                        </div>
+                        <div class="d-flex justify-content-around mb-5">
+                          <div class="p-2 bg-dark text-white">Input&nbsp; Torque<br><br>
+{#                            <input type="range" id="linkRatio2" name="link2">#}
+                              <input id="torqueSlider1" type="text" data-slider-min="0" data-slider-max="8000" data-slider-step="500" data-slider-value="0">
+                              <label for="torqueSlider1">Point&nbsp;1</label><br><br>
+                              <input id="torqueSlider2" type="text" data-slider-min="0" data-slider-max="8000" data-slider-step="500" data-slider-value="4000">
+                              <label for="torqueSlider2">Point&nbsp;2</label><br><br>
+                              <input id="torqueSlider3" type="text" data-slider-min="0" data-slider-max="8000" data-slider-step="500" data-slider-value="4000">
+                              <label for="torqueSlider3">Point&nbsp;3</label><br><br>
+                              <input id="torqueSlider4" type="text" data-slider-min="0" data-slider-max="8000" data-slider-step="500" data-slider-value="2500">
+                              <label for="torqueSlider4">Point&nbsp;4</label><br><br>
+                              <input id="torqueSlider5" type="text" data-slider-min="0" data-slider-max="8000" data-slider-step="500" data-slider-value="2500">
+                              <label for="torqueSlider5">Point&nbsp;5</label><br><br>
+
+                              <input type="hidden" id="torque1" class="form-control" name="torque1" value="0">
+                              <input type="hidden" id="torque2" class="form-control" name="torque2" value="4000">
+                              <input type="hidden" id="torque3" class="form-control" name="torque3" value="4000">
+                              <input type="hidden" id="torque4" class="form-control" name="torque4" value="2500">
+                              <input type="hidden" id="torque5" class="form-control" name="torque5" value="2500">
+
+                          </div>
+
+                          <div class="btn-group-vertical mb-3">
+                            <button class="btn btn-primary btn-lg" type="button"
+                                    id="pivotButton" style="height: 50px">Path Synthesis</button><br><br>
+                            <button class="btn btn-primary btn-lg" type="button"
+                                    id="ForceButton" style="height: 50px">Path-Force Synthesis</button>
+                           </div>
+                        </div>
+                        </div>
+                      </div>
+                  </div>
+                </div></form>
+              </div>
+            </div>
+          </div>
+        </section>
+        <footer class="footer">
+          <div class="footer__block block no-margin-bottom">
+
+          </div>
+        </footer>
+      </div>
+      <div id="preloader" class="preloader"></div>
+      <div id="afterloader" class="preloader" style="display: none;"></div>
+    </div>
+    <!-- JavaScript files-->
+    <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+    <script src="{% static 'vendor/popper.js/umd/popper.min.js' %}"> </script>
+    <script src="{% static 'vendor/bootstrap/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'vendor/jquery.cookie/jquery.cookie.js' %}"> </script>
+    <script src="{% static 'vendor/jquery-validation/jquery.validate.min.js' %}"></script>
+    <script src="{% static 'js/front.js' %}"></script>
+
+    <script src="{% static 'js/metismenu.min.js' %}"></script>
+    <script src="{% static 'js/waves.js' %}"></script>
+    <script src="{% static 'plugins/raphael/raphael.min.js' %}"></script>
+    <script src="{% static 'pages/dashboard-demo.js' %}"></script>
+    <script src="{% static 'js/theme.js' %}"></script>
+    <script src="{% static 'plugins/switchery/switchery.min.js' %}"></script>
+    <script src="{% static 'js/cropper.js' %}"></script>
+    <script src="{% static 'js/jquery-cropper.js' %}"></script>
+    <script src="{% static 'js/cropper_main.js' %}"></script>
+    <script src="{% static 'js/bootstrap-slider.js' %}"></script>
+    <script src="{% static 'js/bootstrap-slider.min.js' %}"></script>
+
+    <script>
+      const nextButton = document.getElementById('nextButton');
+      const resultButton = document.getElementById('resultButton');
+      const generateButton = document.getElementById('generateButton');
+      const pivotButton = document.getElementById('pivotButton');
+      const ForceButton = document.getElementById('ForceButton');
+      let myImg = document.getElementById('myImg');
+      let videoImg = document.getElementById('videoImg');
+      let pivotImg = document.getElementById('pivotImg');
+      let img_flag = true;
+      let pivotimg_flag = true;
+      let k = {{ num }};
+      let track_flag = {{ track }};
+      let back_flag = {{ back }};
+      const img_src = [];
+
+  {% if track > 0 %}
+      resultButton.style.display = '';
+      generateButton.style.display = '';
+      {#nextButton.innerHTML = '&nbsp;&nbsp;下一步&nbsp;&nbsp;';#}
+      nextButton.style.display = 'none';
+
+  {% endif %}
+
+  {% if num > 0 %}
+      let last_index = k - 1;
+      pivotImg.src = "{% static 'images/track_video/' %}" + last_index + '.jpg?t=' + Math.random();
+       {#pivotImg.src = "{% static 'images/empty.jpg' %}" + '?t=' + Math.random();#}
+      myImg.src = "{% static 'images/video/0.jpg' %}" + '?t=' + Math.random();
+  {% else %}
+      myImg.src = "{% static 'images/empty.jpg' %}" + '?t=' + Math.random();
+      pivotImg.src = "{% static 'images/empty.jpg' %}" + '?t=' + Math.random();
+  {% endif %}
+
+  myImg.onerror = function() {
+  img_flag = false;
+  };
+
+  pivotImg.onerror = function() {
+  pivotimg_flag = false;
+  };
+
+  function img_preload() {
+      if (track_flag) {
+          const video = [];
+          for (let i = 0; i < k; i ++) {
+              video.push(new Image());
+              img_src.push("{% static 'images/track_video/' %}" + i + '.jpg?t=' + Math.random());
+          }
+          for (let i = 0; i < k; i ++) {
+              video[i].src = img_src[i];
+          }
+      }
+  }
+
+  var maxChange = function() {
+        var maxVal = maxSlider.bootstrapSlider('getValue');
+        $("#maxLength").val(maxVal);
+      };
+var maxSlider = $("#maxSlider").bootstrapSlider().on('change',maxChange);
+
+
+var minChange = function() {
+        var minVal = minSlider.bootstrapSlider('getValue');
+        $("#minLength").val(minVal);
+      };
+var minSlider = $("#minSlider").bootstrapSlider().on('change',minChange);
+
+var torque1Change = function() {
+        var torqueVal1 = torqueSlider1.bootstrapSlider('getValue');
+        $("#torque1").val(torqueVal1);
+      };
+var torqueSlider1 = $("#torqueSlider1").bootstrapSlider().on('change',torque1Change);
+
+var torque2Change = function() {
+        var torqueVal2 = torqueSlider2.bootstrapSlider('getValue');
+        $("#torque2").val(torqueVal2);
+      };
+var torqueSlider2 = $("#torqueSlider2").bootstrapSlider().on('change',torque2Change);
+
+var torque3Change = function() {
+        var torqueVal3 = torqueSlider3.bootstrapSlider('getValue');
+        $("#torque3").val(torqueVal3);
+      };
+var torqueSlider3 = $("#torqueSlider3").bootstrapSlider().on('change',torque3Change);
+
+var torque4Change = function() {
+        var torqueVal4 = torqueSlider4.bootstrapSlider('getValue');
+        $("#torque4").val(torqueVal4);
+      };
+var torqueSlider4 = $("#torqueSlider4").bootstrapSlider().on('change',torque4Change);
+
+var torque5Change = function() {
+        var torqueVal5 = torqueSlider5.bootstrapSlider('getValue');
+        $("#torque5").val(torqueVal5);
+      };
+var torqueSlider5 = $("#torqueSlider5").bootstrapSlider().on('change',torque5Change);
+
+  window.onload = function () {
+      img_preload();
+      if ($('#preloader').length) {
+          $('#preloader').delay(400).fadeOut('slow', function () {
+              $(this).remove();
+              if (!img_flag || k == 0) {
+                  alert("未上传视频");
+              }
+              if (track_flag > 0 && back_flag == 0) {
+                 alert("关节轨迹生成成功").then(function(t) {
+                      if (t.value) {
+                          videoshow();
+                          videoshown();
+                      }
+                  });
+              }
+          });
+      }
+  };
+
+    generateButton.onclick = function() {
+      document.getElementById('afterloader').style.display = '';
+      document.getElementById("jointForm").submit();
+  };
+
+  nextButton.onclick = function() {
+      {% if track == 0 %}
+          document.getElementById('afterloader').style.display = '';
+          document.getElementById("jointForm").submit();
+      {% endif %}
+  };
+
+  resultButton.onclick = function() {
+      videoshow();
+      videoshown();
+      pivotCropper();
+  };
+
+  function pivotCropper(){
+      var $image = $('#pivotImg');
+      var $pivotX = $('#pivotX');
+      var $pivotY = $('#pivotY');
+      var $pivotHeight = $('#pivotHeight');
+      var $pivotWidth = $('#pivotWidth');
+      var options = {
+          aspectRatio: NaN,
+          viewMode: 3,
+          preview: '.img-preview',
+          crop: function(e) {
+              $pivotX.val(Math.round(e.detail.x));
+              $pivotY.val(Math.round(e.detail.y));
+              $pivotHeight.val(Math.round(e.detail.height));
+              $pivotWidth.val(Math.round(e.detail.width));
+          }
+      };
+        $image.on({
+            ready: function (e) {
+              console.log(e.type);
+            },
+            cropstart: function (e) {
+              console.log(e.type, e.detail.action);
+            },
+            cropmove: function (e) {
+              console.log(e.type, e.detail.action);
+            },
+            cropend: function (e) {
+              console.log(e.type, e.detail.action);
+            },
+            crop: function (e) {
+              console.log(e.type);
+            },
+            zoom: function (e) {
+              console.log(e.type, e.detail.ratio);
+            }
+          }).cropper(options);
+  }
+
+  let replay;
+  const restart_button = document.getElementById('restart');
+
+  function video_play() {
+      let i = 0;
+      replay = window.setInterval(function() {
+          videoImg.src = img_src[i];
+          i = i + 1;
+          if (i === k) {
+              restart_button.style.display = '';
+              clearInterval(replay);
+          }
+      }, time_interval);
+  }
+
+
+  restart_button.onclick = function () {
+      restart_button.style.display = 'none';
+      video_play();
+  }
+
+  function videoshow(){
+      videoImg.src = img_src[0];
+      restart_button.style.display = 'none';
+  }
+  function videoshown(){
+        video_play();
+  }
+
+  myImg.addEventListener('ready', function () {
+     let cropper_area = {'x': {{ x }}, 'y': {{ y }}, 'width': {{ width }}, 'height': {{ height }} };
+     $('#myImg').cropper('setData', cropper_area);});
+
+
+  pivotButton.onclick = function (){
+      let status_pole = 0;
+
+      let expansion = 0;
+      if (document.getElementById('optionsRadios1').checked) {
+          expansion = 1;
+      }
+         if (document.getElementById('optionsRadios2').checked) {
+          expansion = 2;
+      }
+         if (document.getElementById('optionsRadios3').checked) {
+          expansion =3;
+      }
+      if (document.getElementById('optionsRadios4').checked) {
+          expansion = 4;
+      }
+      if (document.getElementById('optionsRadios5').checked) {
+          expansion = 5;
+      }
+      /*let timenum = 0;
+      if (document.getElementById('timing1').checked) {
+          timenum = 1;
+      }
+      if (document.getElementById('timing2').checked) {
+          timenum = 2;
+      }
+      if (document.getElementById('timing3').checked) {
+          timenum = 3;
+      }*/
+
+      if (document.getElementById('two_pole').checked) {
+          status_pole += 1;
+      }
+      if (document.getElementById('three_pole').checked) {
+          status_pole += 2;
+      }
+      if (document.getElementById('four_pole').checked) {
+          status_pole += 4;
+      }
+      if (status_pole === 0) {
+          alert("未选择杆数");
+      } else {
+          url = {% url 'mechanicalDesign' %}
+          $('#hingePointForm').attr('action',url)
+
+          document.getElementById('expansion').value = expansion;
+
+          document.getElementById('status_pole').value = status_pole;
+          //document.getElementById('timenum').value = timenum;
+          document.getElementById('afterloader').style.display = '';
+          document.getElementById("hingePointForm").submit();
+      }
+  };
+
+  ForceButton.onclick = function(){
+
+      let status_pole = 0;
+     /* let timenum = 0;
+      if (document.getElementById('timing1').checked) {
+          timenum = 1;
+      }
+      if (document.getElementById('timing2').checked) {
+          timenum = 2;
+      }
+      if (document.getElementById('timing3').checked) {
+          timenum = 3;
+      }*/
+      if (document.getElementById('two_pole').checked) {
+          status_pole += 1;
+      }
+      if (document.getElementById('three_pole').checked) {
+          status_pole += 2;
+      }
+      if (document.getElementById('four_pole').checked) {
+          status_pole += 4;
+      }
+      if (status_pole === 0) {
+          alert("未选择杆数");
+      } else {
+          forceurl = {% url 'mechanicalDesign_force' %}
+          $('#hingePointForm').attr('action',forceurl)
+
+          document.getElementById('status_pole').value = status_pole;
+         // document.getElementById('expansion').value = expansion;
+          //document.getElementById('timenum').value = timenum;
+          document.getElementById('afterloader').style.display = '';
+          document.getElementById("hingePointForm").submit();
+      }
+  };
+
+    </script>
+  </body>
+</html>
