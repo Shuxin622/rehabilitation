@@ -19,9 +19,6 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('index/', views.index, name='index'),
-    path('tt/', views.tt, name='tt'),
-
     path('video/', views.video, name='video'),
     path('<int:num>/video/', views.video, name='video1'),
     path('<int:num>/<int:back>/video/', views.video, name='video2'),

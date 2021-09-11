@@ -787,9 +787,3 @@ def ratioindexForce(request):
     resultIndex = request.POST['resultIndex']
     flag_video = 1
     return HttpResponseRedirect(reverse('paraForce1', args=(num,resultIndex)))
-
-def index(request):
-    return render(request,'index.html',None)
-
-def tt(request):
-    return render(request,'tt.html',None)
