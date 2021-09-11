@@ -132,7 +132,7 @@ class nBar(object):
     def fourier(self,For_Loop_Matrix,errorIndex):
         FourierMatrix = np.zeros(shape=(self.numPoints, self.barNum), dtype=np.complex)
         FourierMatrix_prestore = np.zeros(shape=(For_Loop_Matrix.shape[1], self.barNum), dtype=object)
-        svd_prestore = np.zeros(shape=(For_Loop_Matrix.shape[1], 3), dtype=object)
+
         for i in range(0, For_Loop_Matrix.shape[1]):
             for row in range(0, self.numPoints):
                 FourierMatrix[row, 0] = cmath.exp(complex(0, (2*pi*For_Loop_Matrix[self.barNum-1,i]/360*self.timing[row]*self.firstLinkCoupleRatio)))
@@ -140,11 +140,6 @@ class nBar(object):
                     FourierMatrix[row, k] = cmath.exp(complex(0, (2*pi*For_Loop_Matrix[self.barNum-1,i]/360*self.timing[row]*For_Loop_Matrix[k-1,i])))
             c = FourierMatrix.copy()
             FourierMatrix_prestore[i, 0] = c
-
-            U, S, V = np.linalg.svd(FourierMatrix_prestore[i, 0])
-            svd_prestore[i, 0] = U
-            svd_prestore[i, 1] = S
-            svd_prestore[i, 2] = np.transpose(V)
 
         zeroMotionComplex = np.zeros(shape=(self.numPoints, 1), dtype=np.complex)
         bestSolError = 1000
@@ -154,8 +149,6 @@ class nBar(object):
                 zeroMotionComplex[:, 0] = complex(self.fixPivot[0, j], self.fixPivot[1, j])
                 higherMotionComplex = self.hipMotionComplex - zeroMotionComplex
                 harmonics = np.dot(np.linalg.pinv(FourierMatrix_prestore[k, 0]), higherMotionComplex)
-                harmonics_svd = np.dot(svd_prestore[k, 2], self.errorFactor)
-                harmonics_sum = harmonics + harmonics_svd
 
                 U, fittingError, VT = np.linalg.svd(
                     self.hipMotionComplex - np.dot(FourierMatrix_prestore[k, 0], harmonics) - zeroMotionComplex)
