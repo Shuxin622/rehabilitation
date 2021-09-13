@@ -46,6 +46,9 @@ class positionForce(object):
         self.barNum = barNum
         self.hipMotion = hipMotion
 
+        self.weightT = 1
+        self.weightP = 1
+
         self.Forcey = 25
         self.errorFactor = np.zeros(shape=(2*self.barNum,1))
 
@@ -66,28 +69,18 @@ class positionForce(object):
 
         uniformTiming = np.arange(0, 1+1/(self.numPoints-1), 1/(self.numPoints-1))
 
-        if timenum == 1:
-            self.timing = (2 * (0.5 * uniformTiming) ** 1.3 - 1) ** 3 + 1
-        elif timenum == 2:
-            self.timing = (2 * (0.5 * uniformTiming) ** 1.3 - 1) ** 3 + 1
-        else:
-            self.timing = (2 * (0.5 * uniformTiming) ** 1.3 - 1) ** 3 + 1
+        self.timing = (2 * (0.5 * uniformTiming) ** 1.3 - 1) ** 3 + 1
 
         # 0,20,40,60,80
-        # self.phif = np.arange(0, 81*2*pi / 360, 20*2*pi / 360)
         self.phif = np.array([0, 30 * 2 * pi / 360, 60 * 2 * pi / 360, 90 * 2 * pi / 360, 110 * 2 * pi / 360])
 
         # torque1, torque2, torque3=50,50,50
-        # self.torque1 = int(torque1)
-        # self.torque2 = int(torque2)
-        # self.torque3 = int(torque3)
-        # self.torque4 = int(torque4)
-        # self.torque5 = int(torque5)
-        self.torque1 = 0
-        self.torque2 = 4000
-        self.torque3 = 4000
-        self.torque4 = 2500
-        self.torque5 = 2500
+        self.torque1 = int(torque1)
+        self.torque2 = int(torque2)
+        self.torque3 = int(torque3)
+        self.torque4 = int(torque4)
+        self.torque5 = int(torque5)
+
         self.torque = np.array([self.torque1, self.torque2, self.torque3, self.torque4, self.torque5])  # N.mm
         self.forceNum = 5
 
@@ -123,11 +116,8 @@ class positionForce(object):
         For_Loop_Matrix_3 = [v[:] for v in var_ravel]
         For_Loop_Matrix_3 = np.array(For_Loop_Matrix_3)
 
-        fixPivotX = 530
-        fixPivotY = -157.5
-
-        # fixPivotX = np.linspace(500, 600, 20)
-        # fixPivotY = np.linspace(-150, -300, 20)
+        fixPivotX = np.linspace(x, x+width, 20)
+        fixPivotY = np.linspace(-(y + height), -y, 20)
 
         [a, b] = np.meshgrid(fixPivotX, fixPivotY)
         a = a.ravel()  # 展开成一维
@@ -154,9 +144,8 @@ class positionForce(object):
     def cal(self, linkNum, dutyCycle):
         ratiolist = []
         for n in range(2,linkNum+1):
-            LinkCoupleRatio = np.array([1.5,1.7])
-            # LinkCoupleRatio = np.arange(1, 4, 1)
-            # LinkCoupleRatio = np.delete(LinkCoupleRatio, 4)
+            LinkCoupleRatio = np.arange(-5, 6, 1)
+            LinkCoupleRatio = np.delete(LinkCoupleRatio, 5)
             ratiolist.append(LinkCoupleRatio)
         ratiolist.append(dutyCycle)
         return ratiolist
@@ -197,7 +186,7 @@ class positionForce(object):
                 for k in range(1,self.barNum):
                     ForceMatrix[rowf, k] = For_Loop_Matrix[k-1,i] * self.Forcey * cos(phif * For_Loop_Matrix[k-1,i])
                     ForceMatrix[rowf, k+self.barNum] = -For_Loop_Matrix[k - 1, i] * self.Forcey * sin(phif * For_Loop_Matrix[k - 1, i])
-            PositionForce = np.append(PositionMatrix,ForceMatrix,axis=0)
+            PositionForce = np.append(PositionMatrix*self.weightP,ForceMatrix*self.weightT,axis=0)
             d = PositionForce.copy()
             PositionForce_prestore[i, 0] = d
 
@@ -215,28 +204,20 @@ class positionForce(object):
                 realmo = self.realHip-self.fixPivot[0, j]
                 imagmo = -self.imagHip-self.fixPivot[1, j]
                 position = np.append(realmo, imagmo)
-                PositionTorque = np.append(position, self.torque)
+                PositionTorque = np.append(position*self.weightP, self.torque*self.weightT)
                 self.PositionTorque[:,0] = PositionTorque
                 self.position[:,0] = position
                 harmonics = np.dot(np.linalg.pinv(PositionForce_prestore[k, 0]), self.PositionTorque)
                 harmonics_svd = np.dot(svd_prestore[k,2],self.errorFactor)
-
-                # harmonics_sum = np.zeros(shape=(2*self.barNum,1))
                 harmonics_sum = harmonics+harmonics_svd
 
                 harmonicslist = np.zeros(shape=(self.barNum,1),dtype=np.complex)
                 for i in range(0,self.barNum):
 
                     harmonicslist[i,0] = complex(harmonics_sum[i], harmonics_sum[i+self.barNum])
-                # #
-                # UT, fittingError, VT = np.linalg.svd(
-                #     self.PositionTorque - np.dot(PositionForce_prestore[k, 0], harmonics_sum))
                 fittingError = np.linalg.norm(self.PositionTorque - np.dot(PositionForce_prestore[k, 0], harmonics_sum))
 
-
                 maxError = bestSolError
-                # if (fittingError < maxError) and min(abs(harmonicslist)) > self.minlength and max(
-                #         abs(harmonicslist)) < self.maxlength::and max(abs(harmonicslist)) < 650:
                 if fittingError < maxError and max(abs(harmonicslist)) < 1000:
                     bestSolError = fittingError
                     self.solution[errorIndex,0] = self.firstLinkCoupleRatio
@@ -252,7 +233,6 @@ class positionForce(object):
         for l in range(self.barNum):
             velocity.append(self.solution[errorIndex, l].real)
         self.velocity.append(velocity)
-        # print(self.solution)
 
 
     def mechPara(self):

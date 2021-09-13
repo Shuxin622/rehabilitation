@@ -55,14 +55,9 @@ class nBar(object):
 
         uniformTiming = np.arange(0, 1+1/(self.numPoints-1), 1/(self.numPoints-1))
 
-        self.errorFactor = np.zeros(shape=(2 * self.barNum, 1))
+        self.errorFactor = np.zeros(shape=(self.barNum, 1))
 
-        if timenum == 1:
-            self.timing = (2 * (0.5 * uniformTiming) ** 1.5 - 1) ** 3 + 1
-        elif timenum == 2:
-            self.timing = (2 * (0.5 * uniformTiming) ** 1.5 - 1) ** 3 + 1
-        else:
-            self.timing = (2 * (0.5 * uniformTiming) ** 1.5 - 1) ** 3 + 1
+        self.timing = (2 * (0.5 * uniformTiming) ** 1.5 - 1) ** 3 + 1
 
         self.initialError = 1000
 
@@ -132,6 +127,7 @@ class nBar(object):
     def fourier(self,For_Loop_Matrix,errorIndex):
         FourierMatrix = np.zeros(shape=(self.numPoints, self.barNum), dtype=np.complex)
         FourierMatrix_prestore = np.zeros(shape=(For_Loop_Matrix.shape[1], self.barNum), dtype=object)
+        svd_prestore = np.zeros(shape=(For_Loop_Matrix.shape[1], 3), dtype=object)
 
         for i in range(0, For_Loop_Matrix.shape[1]):
             for row in range(0, self.numPoints):
@@ -141,6 +137,11 @@ class nBar(object):
             c = FourierMatrix.copy()
             FourierMatrix_prestore[i, 0] = c
 
+            U, S, V = np.linalg.svd(FourierMatrix_prestore[i, 0])
+            svd_prestore[i, 0] = U
+            svd_prestore[i, 1] = S
+            svd_prestore[i, 2] = np.transpose(V)
+
         zeroMotionComplex = np.zeros(shape=(self.numPoints, 1), dtype=np.complex)
         bestSolError = 1000
 
@@ -149,11 +150,14 @@ class nBar(object):
                 zeroMotionComplex[:, 0] = complex(self.fixPivot[0, j], self.fixPivot[1, j])
                 higherMotionComplex = self.hipMotionComplex - zeroMotionComplex
                 harmonics = np.dot(np.linalg.pinv(FourierMatrix_prestore[k, 0]), higherMotionComplex)
+                harmonics_svd = np.dot(svd_prestore[k, 2], self.errorFactor)
+
+                harmonics_sum = harmonics + harmonics_svd
 
                 U, fittingError, VT = np.linalg.svd(
-                    self.hipMotionComplex - np.dot(FourierMatrix_prestore[k, 0], harmonics) - zeroMotionComplex)
+                    self.hipMotionComplex - np.dot(FourierMatrix_prestore[k, 0], harmonics_sum) - zeroMotionComplex)
                 maxError = bestSolError
-                if (fittingError < maxError) and min(abs(harmonics)) > self.minlength and max(abs(harmonics)) < self.maxlength:
+                if (fittingError < maxError) and min(abs(harmonics_sum)) > self.minlength and max(abs(harmonics_sum)) < self.maxlength:
                     bestSolError = fittingError
                     self.solution[errorIndex,0] = self.firstLinkCoupleRatio
                     for i in range(0,self.barNum):
@@ -161,7 +165,7 @@ class nBar(object):
                     self.solution[errorIndex, self.barNum + 1] = self.fixPivot[0, j]
                     self.solution[errorIndex, self.barNum + 2] = self.fixPivot[1, j]
                     for i in range(0,self.barNum):
-                        self.solution[errorIndex, self.barNum+3+i] = harmonics[i]
+                        self.solution[errorIndex, self.barNum+3+i] = harmonics_sum[i]
                     self.solution[errorIndex, 2*self.barNum+3] = fittingError
 
 
