@@ -32,6 +32,7 @@ class positionForce(object):
         self.endVelocity.clear()
         self.endAcceleration.clear()
 
+    # randow timing series
     def randomTiming(self,num):
         lower, upper = 0, 1  # 最大值与最小值
         mu, sigma = 0, 1  # 标准正态分布
@@ -46,10 +47,13 @@ class positionForce(object):
         self.barNum = barNum
         self.hipMotion = hipMotion
 
+        # weight path and force
         self.weightT = 1
         self.weightP = 1
 
         self.Forcey = 25
+
+        # expansion factor
         self.errorFactor = np.zeros(shape=(2*self.barNum,1))
 
         self.errorFactor[-2:] = 4  # 后n位为1
@@ -68,13 +72,12 @@ class positionForce(object):
             self.hipMotionComplex[i] = complex(hipMotion[i, 0], -hipMotion[i, 1])
 
         uniformTiming = np.arange(0, 1+1/(self.numPoints-1), 1/(self.numPoints-1))
-
         self.timing = (2 * (0.5 * uniformTiming) ** 1.3 - 1) ** 3 + 1
 
-        # 0,20,40,60,80
+        # five critical position
         self.phif = np.array([0, 30 * 2 * pi / 360, 60 * 2 * pi / 360, 90 * 2 * pi / 360, 110 * 2 * pi / 360])
 
-        # torque1, torque2, torque3=50,50,50
+        # five input torque
         self.torque1 = int(torque1)
         self.torque2 = int(torque2)
         self.torque3 = int(torque3)
@@ -84,10 +87,9 @@ class positionForce(object):
         self.torque = np.array([self.torque1, self.torque2, self.torque3, self.torque4, self.torque5])  # N.mm
         self.forceNum = 5
 
-        self.initialError = 10000
-
         self.firstLinkCoupleRatio = -1
 
+        # phase angle range
         minDutyCycle = 80
         maxDutyCycle = 80
         dutyCycle = np.arange(minDutyCycle, maxDutyCycle+1, 1)
@@ -116,6 +118,7 @@ class positionForce(object):
         For_Loop_Matrix_3 = [v[:] for v in var_ravel]
         For_Loop_Matrix_3 = np.array(For_Loop_Matrix_3)
 
+        # fixPivot range
         fixPivotX = np.linspace(x, x+width, 20)
         fixPivotY = np.linspace(-(y + height), -y, 20)
 
@@ -141,6 +144,7 @@ class positionForce(object):
             self.endAcceleration.append(self.axy[i, :].copy())
         self.num_machanical += 3
 
+    # transmission ratio set
     def cal(self, linkNum, dutyCycle):
         ratiolist = []
         for n in range(2,linkNum+1):
@@ -207,16 +211,17 @@ class positionForce(object):
                 PositionTorque = np.append(position*self.weightP, self.torque*self.weightT)
                 self.PositionTorque[:,0] = PositionTorque
                 self.position[:,0] = position
+
+                # 非齐次线性方程组的解：x+x*
                 harmonics = np.dot(np.linalg.pinv(PositionForce_prestore[k, 0]), self.PositionTorque)
                 harmonics_svd = np.dot(svd_prestore[k,2],self.errorFactor)
                 harmonics_sum = harmonics+harmonics_svd
 
                 harmonicslist = np.zeros(shape=(self.barNum,1),dtype=np.complex)
                 for i in range(0,self.barNum):
-
                     harmonicslist[i,0] = complex(harmonics_sum[i], harmonics_sum[i+self.barNum])
-                fittingError = np.linalg.norm(self.PositionTorque - np.dot(PositionForce_prestore[k, 0], harmonics_sum))
 
+                fittingError = np.linalg.norm(self.PositionTorque - np.dot(PositionForce_prestore[k, 0], harmonics_sum))
                 maxError = bestSolError
                 if fittingError < maxError and max(abs(harmonicslist)) < 1000:
                     bestSolError = fittingError

@@ -32,6 +32,7 @@ class nBar(object):
         self.endVelocity.clear()
         self.endAcceleration.clear()
 
+    # randow timing series
     def randomTiming(self,num):
         lower, upper = 0, 1  # 最大值与最小值
         mu, sigma = 0, 1  # 标准正态分布
@@ -55,14 +56,14 @@ class nBar(object):
 
         uniformTiming = np.arange(0, 1+1/(self.numPoints-1), 1/(self.numPoints-1))
 
+        # expansion factor
         self.errorFactor = np.zeros(shape=(self.barNum, 1))
 
         self.timing = (2 * (0.5 * uniformTiming) ** 1.5 - 1) ** 3 + 1
 
-        self.initialError = 1000
-
         self.firstLinkCoupleRatio = -1
 
+        # phase angle range
         minDutyCycle = 80
         maxDutyCycle = 80
         dutyCycle = np.arange(minDutyCycle, maxDutyCycle+1, 2)
@@ -81,17 +82,19 @@ class nBar(object):
         For_Loop_Matrix_2 = [v[:] for v in var_ravel]
         For_Loop_Matrix_2 = np.array(For_Loop_Matrix_2)
 
-        minDutyCycle = 80
-        maxDutyCycle = 130
-        dutyCycle = np.arange(minDutyCycle, maxDutyCycle, 10)
+        minDutyCycle = 100
+        maxDutyCycle = 100
+        dutyCycle = np.arange(minDutyCycle, maxDutyCycle+1, 2)
         ratiolist = self.cal(barNum, dutyCycle)
         var = np.meshgrid(*ratiolist)
         var_ravel = [v.ravel() for v in var]
         For_Loop_Matrix_3 = [v[:] for v in var_ravel]
         For_Loop_Matrix_3 = np.array(For_Loop_Matrix_3)
 
-        fixPivotX = np.linspace(x, x + width, 5)
-        fixPivotY = np.linspace(-(y + height), -y, 5)
+
+        # fixPivot range
+        fixPivotX = np.linspace(x, x + width, 20)
+        fixPivotY = np.linspace(-(y + height), -y, 20)
 
         [a, b] = np.meshgrid(fixPivotX, fixPivotY)
         a = a.ravel()  # 展开成一维
@@ -115,6 +118,7 @@ class nBar(object):
             self.endAcceleration.append(self.axy[i,:].copy())
         self.num_machanical += 3
 
+    # transmission ratio set
     def cal(self, linkNum, dutyCycle):
         ratiolist = []
         for n in range(2,linkNum+1):
@@ -124,7 +128,7 @@ class nBar(object):
         ratiolist.append(dutyCycle)
         return ratiolist
 
-    def fourier(self,For_Loop_Matrix,errorIndex):
+    def fourier(self,For_Loop_Matrix, errorIndex):
         FourierMatrix = np.zeros(shape=(self.numPoints, self.barNum), dtype=np.complex)
         FourierMatrix_prestore = np.zeros(shape=(For_Loop_Matrix.shape[1], self.barNum), dtype=object)
         svd_prestore = np.zeros(shape=(For_Loop_Matrix.shape[1], 3), dtype=object)
@@ -149,14 +153,17 @@ class nBar(object):
             for k in range(0, For_Loop_Matrix.shape[1]):
                 zeroMotionComplex[:, 0] = complex(self.fixPivot[0, j], self.fixPivot[1, j])
                 higherMotionComplex = self.hipMotionComplex - zeroMotionComplex
+
+                # 非齐次线性方程组的解：x+x*
                 harmonics = np.dot(np.linalg.pinv(FourierMatrix_prestore[k, 0]), higherMotionComplex)
                 harmonics_svd = np.dot(svd_prestore[k, 2], self.errorFactor)
-
                 harmonics_sum = harmonics + harmonics_svd
 
+                # fittingError--svd/norm
                 U, fittingError, VT = np.linalg.svd(
                     self.hipMotionComplex - np.dot(FourierMatrix_prestore[k, 0], harmonics_sum) - zeroMotionComplex)
                 maxError = bestSolError
+
                 if (fittingError < maxError) and min(abs(harmonics_sum)) > self.minlength and max(abs(harmonics_sum)) < self.maxlength:
                     bestSolError = fittingError
                     self.solution[errorIndex,0] = self.firstLinkCoupleRatio
